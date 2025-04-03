@@ -3,17 +3,22 @@ package seedu.address.storage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.commons.util.ArrayListMap;
+import seedu.address.model.AddressBook;
+import seedu.address.model.assignment.Assignment;
 import seedu.address.model.group.Group;
 import seedu.address.model.group.GroupMemberDetail;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.exceptions.PersonNotFoundException;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -23,10 +28,13 @@ class JsonAdaptedGroup {
 
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Group's %s field is missing!";
 
+    private static final Logger logger = LogsCenter.getLogger(JsonAdaptedGroup.class);
+
     private final String name;
 
     private final ArrayListMap<String, JsonAdaptedGroupMemberDetails> groupMembers = new ArrayListMap<>();
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+    private final ArrayList<JsonAdaptedAssignment> assignments = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedGroup} with the given person details.
@@ -35,13 +43,17 @@ class JsonAdaptedGroup {
     public JsonAdaptedGroup(@JsonProperty("name") String name,
                             @JsonProperty("persons") ArrayListMap<String, JsonAdaptedGroupMemberDetails>
                                     persons,
-                            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+                            @JsonProperty("tags") List<JsonAdaptedTag> tags,
+                            @JsonProperty("assignments") List<JsonAdaptedAssignment> assignments) {
         this.name = name;
         if (persons != null) {
             this.groupMembers.putAll(persons);
         }
         if (tags != null) {
             this.tags.addAll(tags);
+        }
+        if (assignments != null) {
+            this.assignments.addAll(assignments);
         }
     }
 
@@ -58,6 +70,10 @@ class JsonAdaptedGroup {
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
+
+        assignments.addAll(source.getAssignments().stream()
+                .map(JsonAdaptedAssignment::new)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -65,12 +81,22 @@ class JsonAdaptedGroup {
      *
      * @throws IllegalValueException if there were any data constraints violated in the adapted person.
      */
-    public Group toModelType() throws IllegalValueException {
+    public Group toModelType(AddressBook addressBook) throws IllegalValueException {
         final ArrayListMap<Person, GroupMemberDetail> modelGroupMembers = new ArrayListMap<>();
         for (Map.Entry<String, JsonAdaptedGroupMemberDetails> entry : groupMembers.entrySet()) {
-            Person key = entry.getValue().toModelType().getPerson();
-            GroupMemberDetail value = entry.getValue().toModelType();
-            modelGroupMembers.put(key, value);
+            String personName = entry.getKey();
+            GroupMemberDetail groupMemberDetail;
+            Person person;
+            try {
+                person = addressBook.getPerson(personName);
+                groupMemberDetail = entry.getValue().toModelType(person);
+                modelGroupMembers.put(person, groupMemberDetail);
+            } catch (PersonNotFoundException e) {
+                // Person not found in addressbook, remove from group as well.
+                logger.info("Person in Group datafile not found in Address Book:" + personName
+                        + ". Removing from Group data.");
+                continue;
+            }
         }
 
         final List<Tag> modelTags = new ArrayList<>();
@@ -86,7 +112,12 @@ class JsonAdaptedGroup {
         }
         final String modelName = name;
 
-        Group modelGroup = new Group(modelName, modelGroupMembers, modelTags);
+        final List<Assignment> modelAssignments = new ArrayList<>();
+        for (JsonAdaptedAssignment assignment : assignments) {
+            modelAssignments.add(assignment.toModelType());
+        }
+
+        Group modelGroup = new Group(modelName, modelGroupMembers, modelTags, modelAssignments);
         // Set all GroupMemberDetail.group to this
         for (GroupMemberDetail value : modelGroupMembers.values()) {
             value.setGroup(modelGroup);

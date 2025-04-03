@@ -8,6 +8,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -22,6 +23,7 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
+import seedu.address.model.assignment.Assignment;
 import seedu.address.model.group.Group;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -216,6 +218,42 @@ public class AddCommandTest {
         }
 
         @Override
+        public Assignment addAssignmentToGroup(String assignmentName, LocalDate deadline, Group group, Float penalty) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void removeAssignmentFromGroup(String assignmentName, Group group) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void editAssignment(String assignmentName, String newName, LocalDate deadline, Group group,
+                Float penalty) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean isAssignmentInGroup(String assignmentName, Group group) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void gradeAssignment(Person person, Group group, String assignmentName, Float score) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void markAttendance(Person person, Group group, int week) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void unmarkAttendance(Person person, Group group, int week) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public Group getGroup(String groupName) {
             throw new AssertionError("This method should not be called.");
         }
@@ -223,6 +261,16 @@ public class AddCommandTest {
         @Override
         public Person getPerson(String personName) {
             throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Float getGrade(Person person, Group group, String assignmentName) {
+            throw new AssertionError("This method should not be called");
+        }
+
+        @Override
+        public boolean isPersonInGroup(Person person, Group group) {
+            return false;
         }
     }
 

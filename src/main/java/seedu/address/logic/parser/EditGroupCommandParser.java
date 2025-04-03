@@ -19,16 +19,19 @@ import seedu.address.model.tag.Tag;
 public class EditGroupCommandParser implements Parser<EditGroupCommand> {
 
     /**
-     * Parses the given {@code String} of arguments in the context of the {@code EditGroupCommand}
+     * Parses the given {@code String} of arguments in the context of the
+     * {@code EditGroupCommand}
      * and returns an {@code EditGroupCommand} object for execution.
      *
      * @param args The user input arguments as a {@code String}.
-     * @return An {@code EditGroupCommand} object containing the parsed index and new group name.
-     * @throws ParseException If the user input does not conform to the expected format.
+     * @return An {@code EditGroupCommand} object containing the parsed index and
+     *     new group name.
+     * @throws ParseException If the user input does not conform to the expected
+     *                        format.
      */
     public EditGroupCommand parse(String args) throws ParseException {
         requireNonNull(args);
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_NAME);
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_TAG);
 
         Index index;
         try {
@@ -37,8 +40,18 @@ public class EditGroupCommandParser implements Parser<EditGroupCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
                     EditGroupCommand.MESSAGE_USAGE), ive);
         }
-        String newGroupName = argMultimap.getValue(PREFIX_NAME).orElse("");
-        Collection<Tag> tags = ParserUtil.parseTagsForEdit(argMultimap.getAllValues(PREFIX_TAG)).orElse(null);
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_TAG);
+
+        String newGroupName = "";
+        if (argMultimap.getValue(PREFIX_NAME).isPresent()) {
+            newGroupName = ParserUtil.parseGroupName(argMultimap.getValue(PREFIX_NAME).get());
+        }
+
+        Collection<Tag> tags = null;
+        if (argMultimap.getValue(PREFIX_TAG).isPresent()) {
+            tags = ParserUtil.parseTagsForEdit(argMultimap.getAllValues(PREFIX_TAG)).get();
+        }
+
         return new EditGroupCommand(index, newGroupName, tags);
     }
 }

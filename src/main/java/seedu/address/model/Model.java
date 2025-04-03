@@ -1,10 +1,12 @@
 package seedu.address.model;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.assignment.Assignment;
 import seedu.address.model.group.Group;
 import seedu.address.model.person.Person;
 import seedu.address.ui.Result;
@@ -157,6 +159,46 @@ public interface Model {
     void deletePersonFromAllGroups(Person personToRemove);
 
     /**
+     * Add an assignment to the group specified.
+     *
+     * @return The created assignment
+     */
+    Assignment addAssignmentToGroup(String assignmentName, LocalDate deadline, Group group, Float penalty);
+
+    /**
+     * Removes the specified assignment.
+     */
+    void removeAssignmentFromGroup(String assignmentName, Group group);
+
+    /**
+     * Edits the specified assignment.
+     */
+    void editAssignment(String assignmentName, String newName, LocalDate deadline, Group group, Float penalty);
+
+    /**
+     * Returns true if the assignment is in the group.
+     * @param assignmentName Assignment to check
+     * @param group Group to check
+     * @return true if the assignment is in the group, false otherwise
+     */
+    boolean isAssignmentInGroup(String assignmentName, Group group);
+
+    /**
+     * Grades a specified assignment by the given grade.
+     */
+    void gradeAssignment(Person person, Group group, String assignmentName, Float score);
+
+    /**
+     * Mark attendance of a person in a group.
+     */
+    void markAttendance(Person person, Group group, int week);
+
+    /**
+     * Unmark attendance of a person in a group.
+     */
+    void unmarkAttendance(Person person, Group group, int week);
+
+    /**
      * Retrieves a group matching the provided group name.
      */
     Group getGroup(String groupName);
@@ -165,4 +207,17 @@ public interface Model {
      * Retrieves a person matching the provided person name.
      */
     Person getPerson(String personName);
+
+    /**
+     * Retrieves the grade of a specified assignment.
+     */
+    Float getGrade(Person person, Group group, String assignmentName);
+
+    /**
+     * Returns true if the person is in the group.
+     * @param person Person to check
+     * @param group Group to check
+     * @return true if the person is in the group, false otherwise
+     */
+    boolean isPersonInGroup(Person person, Group group);
 }

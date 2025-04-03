@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -11,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.assignment.Assignment;
 import seedu.address.model.group.Group;
 import seedu.address.model.person.Person;
 import seedu.address.ui.Result;
@@ -203,6 +205,18 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public Float getGrade(Person person, Group group, String assignmentName) {
+        requireAllNonNull(person, group, assignmentName);
+        return addressBook.getGrade(person, group, assignmentName);
+    }
+
+    @Override
+    public boolean isPersonInGroup(Person person, Group group) {
+        requireAllNonNull(person, group);
+        return group.contains(person);
+    }
+
+    @Override
     public void addPersonToGroup(Person personToAdd, Group groupToBeAddedTo) {
         requireAllNonNull(personToAdd, groupToBeAddedTo);
         addressBook.addPersonToGroup(personToAdd, groupToBeAddedTo);
@@ -213,14 +227,59 @@ public class ModelManager implements Model {
     public void deletePersonFromGroup(Person personToRemove, Group groupToRemoveFrom) {
         requireAllNonNull(personToRemove, groupToRemoveFrom);
         addressBook.deletePersonFromGroup(personToRemove, groupToRemoveFrom);
-        updateFilteredGroupList(PREDICATE_SHOW_ALL_GROUPS);
     }
 
     @Override
     public void deletePersonFromAllGroups(Person personToRemove) {
         requireNonNull(personToRemove);
         addressBook.deletePersonFromAllGroups(personToRemove);
+    }
+
+    @Override
+    public Assignment addAssignmentToGroup(String assignmentName, LocalDate deadline, Group group, Float penalty) {
+        requireAllNonNull(assignmentName, deadline, group, penalty);
+        Assignment assignment = addressBook.addAssignmentToGroup(assignmentName, deadline, group, penalty);
         updateFilteredGroupList(PREDICATE_SHOW_ALL_GROUPS);
+        return assignment;
+    }
+
+    @Override
+    public void removeAssignmentFromGroup(String assignmentName, Group group) {
+        requireAllNonNull(assignmentName, group);
+        addressBook.removeAssignmentFromGroup(assignmentName, group);
+        updateFilteredGroupList(PREDICATE_SHOW_ALL_GROUPS);
+    }
+
+    @Override
+    public void editAssignment(String assignmentName, String newName, LocalDate deadline, Group group, Float penalty) {
+        requireAllNonNull(assignmentName, group);
+        addressBook.editAssignment(assignmentName, newName, deadline, group, penalty);
+        updateFilteredGroupList(PREDICATE_SHOW_ALL_GROUPS);
+    }
+
+    @Override
+    public boolean isAssignmentInGroup(String assignmentName, Group group) {
+        requireAllNonNull(assignmentName, group);
+        return addressBook.isAssignmentInGroup(assignmentName, group);
+    }
+
+    @Override
+    public void gradeAssignment(Person person, Group group, String assignmentName, Float score) {
+        requireAllNonNull(person, group, assignmentName, score);
+        addressBook.gradeAssignment(person, group, assignmentName, score);
+        updateFilteredGroupList(PREDICATE_SHOW_ALL_GROUPS);
+    }
+
+    @Override
+    public void markAttendance(Person person, Group group, int week) {
+        requireAllNonNull(person, group, week);
+        addressBook.markAttendance(person, group, week);
+    }
+
+    @Override
+    public void unmarkAttendance(Person person, Group group, int week) {
+        requireAllNonNull(person, group, week);
+        addressBook.unmarkAttendance(person, group, week);
     }
 
     @Override

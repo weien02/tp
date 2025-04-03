@@ -2,11 +2,14 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.model.assignment.Assignment;
 import seedu.address.model.group.Group;
+import seedu.address.model.group.GroupMemberDetail;
 import seedu.address.model.group.UniqueGroupList;
 import seedu.address.model.group.exceptions.GroupNotFoundException;
 import seedu.address.model.person.Person;
@@ -19,10 +22,14 @@ import seedu.address.model.person.exceptions.PersonNotFoundException;
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
-    /** The list of unique persons in the address book. */
+    /**
+     * The list of unique persons in the address book.
+     */
     private final UniquePersonList persons;
 
-    /** The list of unique groups in the address book. */
+    /**
+     * The list of unique groups in the address book.
+     */
     private final UniqueGroupList groups;
 
     /*
@@ -40,7 +47,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Constructs an empty AddressBook.
      */
-    public AddressBook() {}
+    public AddressBook() {
+    }
 
     /**
      * Constructs an AddressBook using the data from an existing {@code ReadOnlyAddressBook}.
@@ -112,12 +120,17 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Replaces a target person with an edited person in the address book.
      * Ensures that the target exists and that the edited person does not duplicate another existing person.
      *
-     * @param target The person to be replaced.
+     * @param target       The person to be replaced.
      * @param editedPerson The new person data.
      */
     public void setPerson(Person target, Person editedPerson) {
         requireNonNull(editedPerson);
         persons.setPerson(target, editedPerson);
+        for (Group group : groups) {
+            if (group.contains(target)) {
+                group.setGroupMember(target, editedPerson);
+            }
+        }
     }
 
     /**
@@ -166,7 +179,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Replaces a target group with an edited group in the address book.
      * Ensures that the target exists and the edited group does not duplicate another existing group.
      *
-     * @param target The group to be replaced.
+     * @param target      The group to be replaced.
      * @param editedGroup The new group data.
      */
     public void setGroup(Group target, Group editedGroup) {
@@ -229,6 +242,70 @@ public class AddressBook implements ReadOnlyAddressBook {
                 deletePersonFromGroup(personToRemove, group);
             }
         }
+    }
+
+    /**
+     * Adds assignment to the group specified.
+     */
+    public Assignment addAssignmentToGroup(String assignmentName, LocalDate deadline, Group group, Float penalty) {
+        return group.addAssignment(assignmentName, deadline, penalty);
+    }
+
+    /**
+     * Deletes assignment from the group specified.
+     */
+    public void removeAssignmentFromGroup(String assignmentName, Group group) {
+        group.removeAssignment(assignmentName);
+    }
+
+    /**
+     * Edits specified assignment from the specified group.
+     * @param assignmentName The assignment name.
+     * @param newName The new assignment name.
+     * @param deadline A {@code LocalDate} object specifying the assignment deadline.
+     * @param group A {@code Group} object specifying the group which the assignment is under.
+     */
+    public void editAssignment(String assignmentName, String newName, LocalDate deadline, Group group, Float penalty) {
+        group.editAssignment(assignmentName, newName, deadline, penalty);
+    }
+
+    /**
+     * Checks if the assignment is in the group specified.
+     */
+    public boolean isAssignmentInGroup(String assignmentName, Group group) {
+        return group.containsAssignment(assignmentName);
+    }
+
+    /**
+     * Grades an assignment specified with the relevant score
+     */
+    public void gradeAssignment(Person person, Group group, String assignmentName, Float score) {
+        GroupMemberDetail personDetail = group.getGroupMemberDetail(person);
+        Assignment assignment = group.getAssignment(assignmentName);
+        personDetail.gradeAssignment(assignment, score);
+    }
+
+    /**
+     * Retrives a grade for a specified assignment.
+     */
+    public Float getGrade(Person person, Group group, String assignmentName) {
+        GroupMemberDetail personDetail = group.getGroupMemberDetail(person);
+        Assignment assignment = group.getAssignment(assignmentName);
+        return personDetail.getAssignmentGrade(assignment);
+    }
+
+    /**
+     * Mark attendance of person in group.
+     */
+    public void markAttendance(Person person, Group group, int week) {
+        group.markAttendance(person, week);
+    }
+
+    /**
+     * Unmark attendance of person in group.
+     */
+    public void unmarkAttendance(Person person, Group group, int week) {
+        group.unmarkAttendance(person, week);
     }
 
     /**

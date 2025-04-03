@@ -2,7 +2,8 @@ package seedu.address.model.assignment;
 
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.util.Date;
+import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -19,18 +20,42 @@ public class Assignment {
     /**
      * The assignment deadline.
      */
-    private Date deadline;
+    private LocalDate deadline;
+    /**
+     * Penalty for grading should there be late submission.
+     */
+    private Float penalty;
 
     /**
      * Constructs a {@code Assignment}.
      *
+     * @param name     The assignment name.
+     * @param deadline deadline of the assignment.
+     */
+    public Assignment(String name, LocalDate deadline, Float penalty) {
+        requireAllNonNull(name, deadline, penalty);
+        this.name = name;
+        this.deadline = deadline;
+        this.penalty = penalty;
+    }
+
+    /**
+     * Edits the assignment details.
+     *
      * @param name The assignment name.
      * @param deadline deadline of the assignment.
      */
-    public Assignment(String name, Date deadline) {
-        requireAllNonNull(name, deadline);
-        this.name = name;
-        this.deadline = deadline;
+    public void editAssignment(String name, LocalDate deadline, Float penalty) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (deadline != null) {
+            this.deadline = deadline;
+        }
+
+        if (penalty != null) {
+            this.penalty = penalty;
+        }
     }
 
     public static boolean isValidName(String test) {
@@ -41,8 +66,12 @@ public class Assignment {
         return this.name;
     }
 
-    public Date getDeadline() {
+    public LocalDate getDeadline() {
         return this.deadline;
+    }
+
+    public Float getPenalty() {
+        return this.penalty;
     }
 
     /**
@@ -53,5 +82,10 @@ public class Assignment {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("Assignment'{'name=''{0}'', deadline={1}, penalty={2}'}'", name, deadline, penalty);
     }
 }
